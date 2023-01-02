@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 
-def load_and_prepare_data(shuffle_rows=False, features=None, validation_size=0):
+def load_and_prepare_training_data(shuffle_rows=False, features=None, validation_size=0):
     # Load data from csv sheet
     df = pd.read_csv("../../data/Basismessungen-Table-1.csv", sep=";", header=1)
 
@@ -57,3 +57,18 @@ def load_and_prepare_data(shuffle_rows=False, features=None, validation_size=0):
     y_validation = np.array(y[n_rows - validation_size:n_rows], dtype=float)
 
     return X_train, y_train, X_validation, y_validation, df_lasso
+
+
+def load_and_prepare_new_data(df):
+    # Load data from csv sheet
+    df_test = pd.read_csv("../../data/Geplante-ICL-Table-2.csv", sep=";", header=0).iloc[18:26]
+
+    # Drop artificial column
+    df_test = df_test.drop(columns=['ICL'])
+    df_test = df_test.dropna()
+
+    feat_map = {}
+    for i, col in enumerate(df.columns[2:18]):
+        feat_map[i + 1] = col
+
+    return df_test, feat_map

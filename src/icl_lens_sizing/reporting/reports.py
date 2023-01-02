@@ -1,5 +1,5 @@
 import pandas as pd
-import statsmodels as sm
+import statsmodels.api as sm
 
 
 def create_signed_data_frames(df_dict: dict, selectors: list) -> dict:

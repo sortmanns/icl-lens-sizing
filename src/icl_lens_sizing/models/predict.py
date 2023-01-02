@@ -1,8 +1,8 @@
-import statsmodels as sm
+import statsmodels.api as sm
 import pandas as pd
 
 
-def predict_and_validate_linear_regression(X_validation, est, y_validation):
+def predict_and_validate_linear_regression(X_validation, y_validation, est) -> pd.DataFrame:
 
     X_prime = sm.add_constant(X_validation, has_constant='add')
     prediction = est.predict(X_prime)
