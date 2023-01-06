@@ -4,7 +4,7 @@ import numpy as np
 
 def load_and_prepare_training_data(shuffle_rows=False, features=None, validation_size=0):
     # Load data from csv sheet
-    df = pd.read_csv("../../data/Basismessungen-Table-1.csv", sep=";", header=1)
+    df = pd.read_csv("../../data/Basismessungen-Table-2023-01-02.csv", sep=";", header=1)
 
     # Drop artificial column
     df = df.drop("Unnamed: 0", axis=1)
@@ -61,7 +61,7 @@ def load_and_prepare_training_data(shuffle_rows=False, features=None, validation
 
 def load_and_prepare_new_data(df):
     # Load data from csv sheet
-    df_test = pd.read_csv("../../data/Geplante-ICL-Table-2.csv", sep=";", header=0).iloc[18:26]
+    df_test = pd.read_csv("../../data/Geplante-ICL-Table-2023-01-02.csv", sep=";", header=0).iloc[18:26]
 
     # Drop artificial column
     df_test = df_test.drop(columns=['ICL'])

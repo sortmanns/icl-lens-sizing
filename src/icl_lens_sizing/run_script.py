@@ -36,5 +36,5 @@ preds_ols = predict_ols_for_all_items(df_dict_ols, est, cat_map)
 
 preds_lasso = predict_for_all_items(df_dict_ols, model_lasso, cat_map)
 
-preds_ols.to_csv("../../docs/predictions/preds_ols_20221101.csv")
-preds_lasso.to_csv("../../docs/predictions/preds_lasso_20221101.csv")
+preds_ols.to_csv("../../docs/predictions/preds_ols_2023_01_02.csv")
+preds_lasso.to_csv("../../docs/predictions/preds_lasso_2023_01_02.csv")
