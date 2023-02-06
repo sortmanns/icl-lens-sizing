@@ -34,7 +34,7 @@ icl-lens-sizing
 ===============
 
 
-    Add a short description here!
+    This project attempts to ease the decision of choosing a suitable size for an ICL.
 
 
 A longer description of your project goes here...
