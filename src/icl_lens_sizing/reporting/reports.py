@@ -2,7 +2,7 @@ import pandas as pd
 import statsmodels.api as sm
 
 
-def create_signed_data_frames(df_dict: dict, selectors: list) -> dict:
+def create_named_data_frames(df_dict: dict, selectors: list) -> dict:
     if not selectors:
 
         return df_dict
@@ -11,7 +11,7 @@ def create_signed_data_frames(df_dict: dict, selectors: list) -> dict:
         sel = selectors.pop(0)
         df_dict_suc = creator_helper(df_dict, sel)
 
-        return create_signed_data_frames(df_dict_suc, selectors)
+        return create_named_data_frames(df_dict_suc, selectors)
 
 
 def creator_helper(df_dict_2, sel):
@@ -20,7 +20,7 @@ def creator_helper(df_dict_2, sel):
 
         identifiers = df[sel].unique()
         for ident in identifiers:
-            df_dictus[f"{key}_{sel}_{ident}"] = df[df[sel] == ident].drop(columns=sel)
+            df_dictus[f"{ident}_{key}"] = df[df[sel] == ident].drop(columns=sel)
 
     return df_dictus
 
@@ -79,7 +79,7 @@ def predict_ols_for_all_items(array_dict, model, cat_map):
     predictions = {}
 
     for key, value in array_dict.items():
-        X = value.values
+
         X = sm.add_constant(value, has_constant='add')
         pred = model.predict(X)
         df = pd.DataFrame(data=pred).rename(mapper=cat_map, axis=0).rename(columns={0: key})
@@ -89,7 +89,8 @@ def predict_ols_for_all_items(array_dict, model, cat_map):
     for key, value in predictions.items():
         predictions_df = pd.concat([predictions_df, value], axis=1)
 
-    return predictions_df
+    predictions_df = predictions_df.sort_index().round(0).astype(int)
+    return predictions_df.transpose().sort_index()
 
 
 def predict_for_all_items(df_dict, model, cat_map):
@@ -104,4 +105,5 @@ def predict_for_all_items(df_dict, model, cat_map):
     for key, value in predictions.items():
         predictions_df = pd.concat([predictions_df, value], axis=1)
 
-    return predictions_df
+    predictions_df = predictions_df.sort_index().round(0).astype(int)
+    return predictions_df.transpose().sort_index()

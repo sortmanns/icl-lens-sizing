@@ -2,39 +2,44 @@ from preprocessing.preprocessing import load_and_prepare_training_data, load_and
 import statsmodels.api as sm
 from sklearn.linear_model import Lasso
 
-from src.icl_lens_sizing.reporting.reports import create_signed_data_frames, prepare_dfs_for_pred, \
+from src.icl_lens_sizing.reporting.reports import create_named_data_frames, prepare_dfs_for_pred, \
     predict_ols_for_all_items, predict_for_all_items
 
-# prepare data
-features = ['ACD', 'ACA nasal', 'ACA temporal', 'AtA', 'ACW',
-            'ARtARLR', 'StS', 'StS LR', 'CBID', 'CBID LR', 'mPupil', 'WtW MS-39',
-            'WtW IOL Master', 'Sphäre', 'Zylinder', 'Sphärisches Äquivalent']
 
-X_train, y_train, X_validation, y_validation, df = load_and_prepare_training_data(features=features, validation_size=0)
+def run_all(write: bool = False):
+    # prepare data
+    features = ['ACD', 'ACA nasal', 'ACA temporal', 'AtA', 'ACW',
+                'ARtARLR', 'StS', 'StS LR', 'CBID', 'CBID LR', 'mPupil', 'WtW MS-39',
+                'WtW IOL Master', 'Sphäre', 'Zylinder', 'Sphärisches Äquivalent']
 
-# train linear regression
-X_ols = sm.add_constant(X_train, has_constant='add')
-est = sm.OLS(y_train, X_ols).fit()
+    X_train, y_train, X_validation, y_validation, df = load_and_prepare_training_data(features=features, validation_size=0)
 
-# train lasso regression
-model_lasso = Lasso()
-model_lasso.fit(X_train, y_train)
+    # train linear regression
+    X_ols = sm.add_constant(X_train, has_constant='add')
+    est = sm.OLS(y_train, X_ols).fit()
 
-# predict for new data
-df_test, feat_map = load_and_prepare_new_data(df)
-selectors = ['Eye', 'ID']
-df_dicti = create_signed_data_frames({'df': df_test}, selectors)
+    # train lasso regression
+    model_lasso = Lasso()
+    model_lasso.fit(X_train, y_train)
 
-feat_map[0] = 'ICL-Size'
-df_dict_ols = prepare_dfs_for_pred(df_dicti, ['ICL-Size'], feat_map, df[['ICL-Size']])
+    # predict for new data
+    df_test, feat_map = load_and_prepare_new_data(df)
+    selectors = ['Eye', 'ID']
+    df_dicti = create_named_data_frames({'df': df_test}, selectors)
 
-cat_map = {}
-for i, cat in enumerate(df['ICL-Size'].unique()):
-    cat_map[i] = cat
+    feat_map[0] = 'ICL-Size'
+    df_dict_ols = prepare_dfs_for_pred(df_dicti, ['ICL-Size'], feat_map, df[['ICL-Size']])
 
-preds_ols = predict_ols_for_all_items(df_dict_ols, est, cat_map)
+    cat_map = {}
+    for i, cat in enumerate(df['ICL-Size'].unique()):
+        cat_map[i] = cat
 
-preds_lasso = predict_for_all_items(df_dict_ols, model_lasso, cat_map)
+    preds_ols = predict_ols_for_all_items(df_dict_ols, est, cat_map)
 
-preds_ols.to_csv("../../docs/predictions/preds_ols_2023_01_02.csv")
-preds_lasso.to_csv("../../docs/predictions/preds_lasso_2023_01_02.csv")
+    preds_lasso = predict_for_all_items(df_dict_ols, model_lasso, cat_map)
+
+    if write:
+        preds_ols.to_csv("../../docs/predictions/preds_ols_2023_02_25.csv")
+        preds_lasso.to_csv("../../docs/predictions/preds_lasso_2023_02_25.csv")
+
+    return preds_lasso, preds_ols
