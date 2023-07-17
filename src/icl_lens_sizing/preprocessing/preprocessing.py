@@ -1,74 +1,58 @@
 import pandas as pd
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
-
-def load_and_prepare_training_data(shuffle_rows=False, features=None, validation_size=0):
-    # Load data from csv sheet
-    df = pd.read_csv("../../data/Basismessungen-Table-2023-02-25.csv", sep=";", header=1)
+def prepare_training_data(df, target, features=None, categorical_features=None, standardize=True, test_size=0.2,
+                          custom_features:dict=None):
 
     # Drop artificial column
-    df = df.drop("Unnamed: 0", axis=1)
-    df = df.replace("-", None)
-
-    df = df.drop(columns=["ID", "Eye", "ICL"])
+    df = df.drop(columns=["implantat_name","auge"])
 
     if features:
-        cols = ["ICL-Size", "Vault"] + features
+        cols = [target] + features
         df = df[cols]
-    # df = df[["ICL-Size", "Vault", 'StS LR', 'CBID LR']]
-    # df['ratio'] = df['CBID LR']/df['mPupil']
+
     # Drop rows containing NaN's
     df = df.dropna()
 
-    # Swap first two columns
-    feature_cols = list(df.columns)[2:]
-    columns_titles = ["Vault", "ICL-Size"] + feature_cols
-    df = df.reindex(columns=columns_titles)
+    # Split df into X and y
+    target_df = df[target]
+    feature_df = df.drop(columns=[target])
+
+
+    if categorical_features:
+        feature_df = pd.get_dummies(data=feature_df, columns=categorical_features, drop_first=True)
+
+    if custom_features:
+        for key, func in custom_features.items():
+            feature_df[key] = feature_df.apply(func, axis=1)
+
+    # Create feature mapping
     feature_mapping = {}
-    for i, col in enumerate(df.columns):
+    for i, col in enumerate(feature_df.columns):
         feature_mapping[i] = col
 
-    print(feature_mapping)
-    # Shuffle rows
-    if shuffle_rows:
-        df_lasso = df.reindex(np.random.permutation(df.index))
-    else:
-        df_lasso = df
+    X_train, X_validation, y_train, y_validation = train_test_split(feature_df, target_df, test_size=test_size)
+    if standardize:
+        standart_scaler = StandardScaler()
+        X_train = standart_scaler.fit_transform(X_train)
+        X_validation = standart_scaler.fit_transform(X_validation)
 
-    # Mark categorical features
-    # df_lasso['ICL-Size'] = df_lasso['ICL-Size'].astype(str).astype('category')
-
-    # Transform Pandas dataframes to NumPy arrays
-    X = df_lasso.values[:, 1:19]
-    y = df_lasso.values[:, 0]
-
-    # Generate encoded categorical features from ICL-size
-    # X_categorical, dictnames = sm.tools.categorical(X, col = 0, dictnames= True, drop=True)
-
-    # Convert array type back to float
-    X_categorical = np.array(X, dtype=float)
-
-    print(f"Data shape: {X_categorical.shape}")
-    # Split data into training and test data
-    n_rows = X_categorical.shape[0]
-    X_train = X_categorical[0:n_rows - validation_size, :]
-    X_validation = X_categorical[n_rows - validation_size:n_rows, :]
-    y_train = np.array(y[0:n_rows - validation_size], dtype=float)
-    y_validation = np.array(y[n_rows - validation_size:n_rows], dtype=float)
-
-    return X_train, y_train, X_validation, y_validation, df_lasso
+    return X_train, y_train, X_validation, y_validation, feature_mapping
 
 
-def load_and_prepare_new_data(df):
-    # Load data from csv sheet
-    df_test = pd.read_csv("../../data/Geplante-ICL-Table-2023-02-25.csv", sep=";", header=0)
+def prepare_pred_data(df, features=None, categorical_features=None, custom_features:dict=None):
 
-    # Drop artificial column
-    df_test = df_test.drop(columns=['ICL'])
-    df_test = df_test.dropna()
 
-    feat_map = {}
-    for i, col in enumerate(df.columns[2:18]):
-        feat_map[i + 1] = col
+    # Drop rows containing NaN's
+    df = df.dropna()
 
-    return df_test, feat_map
+    if categorical_features:
+        feature_df = pd.get_dummies(data=df, columns=categorical_features, drop_first=True)
+
+    if custom_features:
+        for key, func in custom_features.items():
+            feature_df[key] = feature_df.apply(func, axis=1)
+
+    return feature_df
