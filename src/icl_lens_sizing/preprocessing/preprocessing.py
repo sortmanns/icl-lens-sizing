@@ -4,7 +4,10 @@ import numpy as np
 def prepare_training_data(df, target, features=None, categorical_features=None, custom_features:dict=None):
 
     # Drop artificial column
-    df = df.drop(columns=["implantat_name","auge"])
+    try:
+        df = df.drop(columns=["implantat_name","auge"])
+    except Exception as e:
+        print(f"{e}")
 
     if features:
         cols = [target] + features
